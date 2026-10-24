@@ -1,0 +1,470 @@
+
+openapi: 3.0.3
+
+info:
+  title: Task Management API
+  version: 1.0.0
+  description: REST API for managing projects and tasks.
+  contact:
+    name: Artem Demchenko
+
+servers:
+  - url: https://api.example.com/v1
+    description: Example API server
+
+tags:
+  - name: Projects
+    description: Operations with projects
+  - name: Tasks
+    description: Operations with tasks
+
+security:
+  - BearerAuth: []
+
+paths:
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: Get all projects
+      operationId: getProjects
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of projects
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of projects to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+              example:
+                - id: 1
+                  name: University project
+                  description: Project for studying
+                  status: active
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags:
+        - Projects
+      summary: Create a project
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInput'
+            example:
+              name: Website development
+              description: Develop a website
+              status: active
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /projects/{projectId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+
+    get:
+      tags:
+        - Projects
+      summary: Get a project by ID
+      operationId: getProjectById
+      security: []
+      responses:
+        '200':
+          description: Project found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Projects
+      summary: Update a project
+      operationId: updateProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectInput'
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete a project
+      operationId: deleteProject
+      responses:
+        '204':
+          description: Project deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get all tasks
+      operationId: getTasks
+      security: []
+      parameters:
+        - name: projectId
+          in: query
+          description: Filter tasks by project ID
+          schema:
+            type: integer
+            minimum: 1
+        - name: status
+          in: query
+          description: Filter tasks by status
+          schema:
+            type: string
+            enum:
+              - todo
+              - in_progress
+              - done
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+              example:
+                - id: 1
+                  projectId: 1
+                  title: Prepare report
+                  description: Finish the laboratory report
+                  status: todo
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags:
+        - Tasks
+      summary: Create a task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+            example:
+              projectId: 1
+              title: Prepare report
+              description: Finish the laboratory report
+              status: todo
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /tasks/{taskId}:
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        description: Unique task identifier
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+
+    get:
+      tags:
+        - Tasks
+      summary: Get a task by ID
+      operationId: getTaskById
+      security: []
+      responses:
+        '200':
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Tasks
+      summary: Update a task
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Tasks
+      summary: Delete a task
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Task deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter a valid JWT access token.
+
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      description: Unique project identifier
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+  schemas:
+    Project:
+      type: object
+      required:
+        - id
+        - name
+        - status
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          example: University project
+        description:
+          type: string
+          example: Project for studying
+        status:
+          type: string
+          enum:
+            - active
+            - completed
+            - archived
+          example: active
+
+    ProjectInput:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Website development
+        description:
+          type: string
+          example: Develop a website
+        status:
+          type: string
+          enum:
+            - active
+            - completed
+            - archived
+          example: active
+
+    Task:
+      type: object
+      required:
+        - id
+        - projectId
+        - title
+        - status
+      properties:
+        id:
+          type: integer
+          example: 1
+        projectId:
+          type: integer
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          example: Prepare report
+        description:
+          type: string
+          example: Finish the laboratory report
+        status:
+          type: string
+          enum:
+            - todo
+            - in_progress
+            - done
+          example: todo
+
+    TaskInput:
+      type: object
+      required:
+        - projectId
+        - title
+        - status
+      properties:
+        projectId:
+          type: integer
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          example: Prepare report
+        description:
+          type: string
+          example: Finish the laboratory report
+        status:
+          type: string
+          enum:
+            - todo
+            - in_progress
+            - done
+          example: todo
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Resource not found
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication is required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
