@@ -1,4 +1,5 @@
 
+
 name: Deploy Zudoku to GitHub Pages
 
 on:
@@ -28,8 +29,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: my-app/package-lock.json
 
       - name: Install dependencies
         working-directory: my-app
@@ -56,3 +55,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
