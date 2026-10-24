@@ -29,25 +29,28 @@ jobs:
         with:
           node-version: 22
 
-      - name: Check project files
-        working-directory: my-app
+      - name: Diagnose repository
         run: |
+          echo "Repository root:"
           pwd
           ls -la
-          test -f package.json || (echo "ERROR: package.json not found in my-app" && exit 1)
+          echo "Searching for package.json:"
+          find . -maxdepth 4 -name package.json -not -path "*/node_modules/*"
 
       - name: Install dependencies
-        working-directory: my-app
-        run: npm install --no-audit --no-fund
+        run: |
+          cd "$GITHUB_WORKSPACE/my-app"
+          npm install --no-audit --no-fund
 
       - name: Build Zudoku
-        working-directory: my-app
-        run: npm run build
-
-      - name: Verify build output
         run: |
-          test -f my-app/dist/index.html || (echo "ERROR: my-app/dist/index.html not found" && exit 1)
-          echo "Build output verified."
+          cd "$GITHUB_WORKSPACE/my-app"
+          npm run build
+
+      - name: Verify build
+        run: |
+          ls -la "$GITHUB_WORKSPACE/my-app/dist"
+          test -f "$GITHUB_WORKSPACE/my-app/dist/index.html"
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
